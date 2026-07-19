@@ -54,8 +54,14 @@ function injectBaseStyles() {
     /* Sizes use clamp() rather than fixed rems: this renderer is meant to
        work embedded in a small box or filling an entire viewport (a black
        box taking up the whole window is the demo's own default stage), and
-       the figures/bubbles/caption should scale to fill whichever it gets. */
-    .bard-stage { position: relative; width: 100%; height: 100%;
+       the figures/bubbles/caption should scale to fill whichever it gets.
+       Deliberately no height:100% here — this renders alongside a sibling
+       .bard-caption below it, and a mount container is not always exactly
+       as tall as this content wants to be. This sizes to its own content
+       (the actors) and leaves vertical placement entirely to whatever
+       layout the consumer's mount container uses — a flex column with
+       justify-content:flex-end, in this package's own reference demo. */
+    .bard-stage { position: relative; width: 100%;
       display: flex; align-items: flex-end; justify-content: center;
       gap: clamp(2rem, 6vw, 6rem); font-family: 'Courier New', Courier, monospace; }
     .bard-actor { position: relative; text-align: center; opacity: 0;

@@ -31,6 +31,19 @@
       inset: 0;
       background: #000;
       z-index: 1;
+      /* .bard-stage no longer forces height:100% (that left .bard-caption
+         nowhere to render and pushed actors behind the bottom overlay) —
+         instead this is a column flex container, same pattern the small
+         boxed version of this demo used, so the actor row + caption
+         stack naturally and the whole group settles at the bottom of
+         whatever vertical space is actually free. padding-top/bottom are
+         set from JS, measured against the real height of the overlays,
+         so this never overlaps the title or the controls. */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 1.25rem;
+      padding: 6rem 1.5rem; /* sane fallback before JS measures the overlays */
     }
 
     /* ─── venue art ──────────────────────────────────────────────────────
@@ -54,8 +67,12 @@
       pointer-events: none;
     }
 
-    .venue-frame-top { top: 0.75rem; }
-    .venue-frame-bottom { bottom: 0.75rem; }
+    /* Fallback offsets only — JS measures the real rendered height of the
+       title and controls overlays and sets top/bottom inline, so the
+       venue art never overlaps either one regardless of viewport width
+       or how many lines the header text wraps to. */
+    .venue-frame-top { top: 6rem; }
+    .venue-frame-bottom { bottom: 6rem; }
 
     /* ─── overlay chrome ─────────────────────────────────────────────────
        Title up top, controls/pickers pinned to the bottom, both floating
