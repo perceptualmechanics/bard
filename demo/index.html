@@ -117,27 +117,30 @@
       text-align: center;
     }
 
-    #scene-list {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.4rem 0.75rem;
-      list-style: none;
+    #scene-select {
+      width: 100%;
+      background: #000;
+      color: rgba(255,255,255,0.8);
+      font-family: inherit;
+      font-size: 0.75rem;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 0.3rem;
     }
 
-    #scene-list li {
-      font-size: 0.72rem;
+    #scene-select option {
+      padding: 0.35rem 0.5rem;
     }
 
-    #scene-list label {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      cursor: pointer;
-      color: rgba(255,255,255,0.75);
+    #scene-select option:checked {
+      background: rgba(255,255,255,0.16);
+      color: #fff;
     }
 
-    #scene-list input {
-      accent-color: rgba(255,255,255,0.7);
+    .picker-hint {
+      margin-top: 0.4rem;
+      font-size: 0.62rem;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
     }
 
     .picker-actions {
@@ -213,11 +216,12 @@
 
     <div id="scene-picker">
       <p class="picker-label">choose which plays to run</p>
-      <ul id="scene-list"></ul>
+      <select id="scene-select" multiple size="8"></select>
+      <p class="picker-hint">click to select one · cmd/ctrl-click (or shift-click) for more than one</p>
       <div class="picker-actions">
         <button data-picker-act="all">select all</button>
         <button data-picker-act="none">select none</button>
-        <button data-picker-act="apply" class="primary">▷ apply &amp; restart</button>
+        <button data-picker-act="apply" class="primary">▷ shuffle &amp; apply</button>
       </div>
       <p id="picker-note"></p>
     </div>

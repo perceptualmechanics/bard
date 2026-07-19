@@ -3,49 +3,41 @@
 // reference DOM renderer, and hook up simple playback controls. This is the
 // smallest possible "real" use of bard.js outside perceptualmechanics itself.
 //
-// Scene selection is deliberately just this: filter SCENES down to the
-// checked titles and hand the subset back to compileScript. No new engine
-// API needed — compileScript already accepts any array of scenes, and
-// correctly drops the between-scene intermission entirely if only one
-// scene is left selected (its default is `scenes.length > 1`).
+// Scene selection is deliberately just this: read whichever options are
+// selected in the dropdown and hand that subset back to compileScript. No
+// new engine API needed — compileScript already accepts any array of
+// scenes, and correctly drops the between-scene intermission entirely if
+// only one scene is left selected (its default is `scenes.length > 1`).
+//
+// Order is reshuffled every time the reel starts or restarts, same as
+// theater.js does with its own three plays — bard.js exports that same
+// shuffle utility now, so this doesn't need its own copy.
 
-import { Player, compileScript } from 'bardjs';
+import { Player, compileScript, shuffle } from 'bardjs';
 import { DomRenderer } from 'bardjs/renderers/dom';
 import { CAST, SCENES } from './scenes.js';
 
 const stageFrame = document.getElementById('stage-frame');
 const progressEl = document.getElementById('progress');
 const playBtn = document.querySelector('[data-act="play"]');
-const sceneListEl = document.getElementById('scene-list');
+const sceneSelectEl = document.getElementById('scene-select');
 const pickerNoteEl = document.getElementById('picker-note');
 
 const renderer = new DomRenderer({ cast: CAST });
 
-// Every scene starts selected.
-const selected = new Set(SCENES.map((_, i) => i));
-
-function currentSelection() {
-  return SCENES.filter((_, i) => selected.has(i));
+function buildPicker() {
+  sceneSelectEl.innerHTML = '';
+  SCENES.forEach((scene, i) => {
+    const option = document.createElement('option');
+    option.value = String(i);
+    option.textContent = scene.title || scene.slug;
+    option.selected = true; // everything starts selected
+    sceneSelectEl.appendChild(option);
+  });
 }
 
-function buildPicker() {
-  sceneListEl.innerHTML = '';
-  SCENES.forEach((scene, i) => {
-    const li = document.createElement('li');
-    const label = document.createElement('label');
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.checked = selected.has(i);
-    input.dataset.sceneIndex = String(i);
-    input.addEventListener('change', () => {
-      if (input.checked) selected.add(i);
-      else selected.delete(i);
-    });
-    label.appendChild(input);
-    label.append(scene.title || scene.slug);
-    li.appendChild(label);
-    sceneListEl.appendChild(li);
-  });
+function currentSelection() {
+  return [...sceneSelectEl.selectedOptions].map(o => SCENES[Number(o.value)]);
 }
 
 function updateProgress() {
@@ -56,7 +48,7 @@ function setPlayLabel() {
   playBtn.textContent = player.playing ? '❙❙ pause' : '▷ play';
 }
 
-const player = new Player(compileScript(SCENES), renderer, {
+const player = new Player(compileScript(shuffle(SCENES)), renderer, {
   onAdvance: () => { updateProgress(); setPlayLabel(); },
   onEnd: () => { setPlayLabel(); progressEl.textContent = 'end of the reel'; },
 });
@@ -71,7 +63,12 @@ document.querySelector('.controls').addEventListener('click', (e) => {
   if (act === 'prev') player.prev();
   else if (act === 'next') player.next();
   else if (act === 'play') { player.toggle(); setPlayLabel(); }
-  else if (act === 'restart') { player.restart(compileScript(currentSelection())); setPlayLabel(); updateProgress(); }
+  else if (act === 'restart') {
+    const chosen = currentSelection();
+    player.restart(compileScript(shuffle(chosen.length ? chosen : SCENES)));
+    setPlayLabel();
+    updateProgress();
+  }
 });
 
 document.querySelector('.picker-actions').addEventListener('click', (e) => {
@@ -80,12 +77,10 @@ document.querySelector('.picker-actions').addEventListener('click', (e) => {
   const act = btn.dataset.pickerAct;
 
   if (act === 'all') {
-    SCENES.forEach((_, i) => selected.add(i));
-    buildPicker();
+    [...sceneSelectEl.options].forEach(o => { o.selected = true; });
     pickerNoteEl.textContent = '';
   } else if (act === 'none') {
-    selected.clear();
-    buildPicker();
+    [...sceneSelectEl.options].forEach(o => { o.selected = false; });
     pickerNoteEl.textContent = '';
   } else if (act === 'apply') {
     const chosen = currentSelection();
@@ -94,7 +89,7 @@ document.querySelector('.picker-actions').addEventListener('click', (e) => {
       return;
     }
     pickerNoteEl.textContent = '';
-    player.restart(compileScript(chosen));
+    player.restart(compileScript(shuffle(chosen)));
     setPlayLabel();
     updateProgress();
   }
