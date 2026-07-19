@@ -8,66 +8,111 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      width: 100%; min-height: 100%;
-      background: #05050a;
+      width: 100%; height: 100%;
+      background: #000;
       color: rgba(255,255,255,0.85);
       font-family: 'Courier New', Courier, monospace;
+      overflow: hidden; /* the stage is the whole window — no page scroll */
     }
 
-    body {
-      display: flex;
-      justify-content: center;
-      padding: 2rem 1rem 3rem;
-    }
-
+    /* ─── the black box ─────────────────────────────────────────────────
+       The default stage: nothing but black, filling the entire viewport.
+       Everything else — title, controls, pickers, venue art — is an
+       overlay drawn on top of it, never something the stage itself has
+       to make room for. */
     #bard-demo {
-      width: 100%;
-      max-width: 640px;
+      position: relative;
+      width: 100vw;
+      height: 100vh;
     }
 
-    header {
+    #stage-frame {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      z-index: 1;
+    }
+
+    /* ─── venue art ──────────────────────────────────────────────────────
+       Purely decorative ASCII backdrops, one per era of theater
+       architecture. Optional, off by default (a bare black box, per the
+       amphitheater's own "no sets beyond which scene we're in" rule) —
+       choosing one changes nothing about how the engine runs a scene,
+       it's paint laid over the stage, not plumbing under it. */
+    .venue-frame {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      white-space: pre;
+      line-height: 1.25;
+      letter-spacing: 0.02em;
       text-align: center;
-      margin-bottom: 1.5rem;
+      font-size: clamp(0.42rem, 1.05vw, 0.8rem);
+      text-shadow: 0 0 8px currentColor;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    .venue-frame-top { top: 0.75rem; }
+    .venue-frame-bottom { bottom: 0.75rem; }
+
+    /* ─── overlay chrome ─────────────────────────────────────────────────
+       Title up top, controls/pickers pinned to the bottom, both floating
+       over the black box rather than pushing it around. */
+    .overlay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 5;
+      padding: 1.1rem 1.25rem;
+    }
+
+    .overlay-top {
+      top: 0;
+      text-align: center;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.88), transparent);
+    }
+
+    .overlay-bottom {
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+      max-height: 62vh;
+      overflow-y: auto;
+      background: linear-gradient(to top, rgba(0,0,0,0.94) 45%, transparent);
     }
 
     header h1 {
       font-family: 'Times New Roman', serif;
       font-weight: normal;
-      font-size: 1.6rem;
+      font-size: clamp(1.4rem, 3vw, 2.1rem);
       letter-spacing: 0.05em;
     }
 
     header h1 span {
       display: block;
       font-family: 'Courier New', Courier, monospace;
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       letter-spacing: 0.3em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
-      margin-top: 0.4rem;
+      color: rgba(255,255,255,0.45);
+      margin-top: 0.45rem;
     }
 
     header p.sub {
       margin-top: 0.75rem;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       line-height: 1.5;
-      color: rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.5);
+      max-width: 44rem;
+      margin-left: auto;
+      margin-right: auto;
     }
 
-    #stage-frame {
-      position: relative;
-      min-height: 260px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: #000;
-      padding: 1.5rem 1rem 1.25rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      gap: 0.75rem;
-    }
-
-    .controls {
-      margin-top: 1rem;
+    .controls, .picker-actions {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -75,98 +120,21 @@
       flex-wrap: wrap;
     }
 
-    .controls button {
+    .controls button, .picker-actions button {
       background: transparent;
       border: 1px solid rgba(255,255,255,0.25);
       color: rgba(255,255,255,0.8);
       font-family: inherit;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      padding: 0.45rem 0.8rem;
+      padding: 0.45rem 0.85rem;
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s;
     }
 
-    .controls button:hover,
-    .controls button:focus-visible {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.5);
-    }
-
-    #progress {
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.4);
-      min-width: 5.5rem;
-      text-align: center;
-    }
-
-    #scene-picker {
-      margin-top: 1.75rem;
-      border-top: 1px solid rgba(255,255,255,0.12);
-      padding-top: 1rem;
-    }
-
-    #scene-picker .picker-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
-      margin-bottom: 0.6rem;
-      text-align: center;
-    }
-
-    #scene-select {
-      width: 100%;
-      background: #000;
-      color: rgba(255,255,255,0.8);
-      font-family: inherit;
-      font-size: 0.75rem;
-      border: 1px solid rgba(255,255,255,0.25);
-      padding: 0.3rem;
-    }
-
-    #scene-select option {
-      padding: 0.35rem 0.5rem;
-    }
-
-    #scene-select option:checked {
-      background: rgba(255,255,255,0.16);
-      color: #fff;
-    }
-
-    .picker-hint {
-      margin-top: 0.4rem;
-      font-size: 0.62rem;
-      color: rgba(255,255,255,0.35);
-      text-align: center;
-    }
-
-    .picker-actions {
-      margin-top: 0.85rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .picker-actions button {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.25);
-      color: rgba(255,255,255,0.8);
-      font-family: inherit;
-      font-size: 0.68rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      padding: 0.4rem 0.75rem;
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-    }
-
-    .picker-actions button:hover,
-    .picker-actions button:focus-visible {
+    .controls button:hover, .picker-actions button:hover,
+    .controls button:focus-visible, .picker-actions button:focus-visible {
       background: rgba(255,255,255,0.08);
       border-color: rgba(255,255,255,0.5);
     }
@@ -175,62 +143,124 @@
       border-color: rgba(255,255,255,0.5);
     }
 
+    #progress {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.45);
+      min-width: 5.5rem;
+      text-align: center;
+    }
+
+    .picker-row {
+      width: 100%;
+      max-width: 30rem;
+      text-align: center;
+    }
+
+    .picker-row + .picker-row {
+      margin-top: 0.5rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .picker-label {
+      font-size: 0.66rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 0.55rem;
+    }
+
+    #scene-select, #venue-select {
+      width: 100%;
+      background: #000;
+      color: rgba(255,255,255,0.85);
+      font-family: inherit;
+      font-size: 0.76rem;
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 0.3rem;
+    }
+
+    #scene-select option, #venue-select option {
+      padding: 0.35rem 0.5rem;
+    }
+
+    #scene-select option:checked, #venue-select option:checked {
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+    }
+
+    .picker-hint {
+      margin-top: 0.4rem;
+      font-size: 0.63rem;
+      color: rgba(255,255,255,0.4);
+    }
+
     #picker-note {
       margin-top: 0.5rem;
-      text-align: center;
-      font-size: 0.65rem;
-      color: rgba(255,140,140,0.75);
+      font-size: 0.66rem;
+      color: rgba(255,140,140,0.8);
       min-height: 1.2em;
     }
 
     footer {
-      margin-top: 2rem;
-      text-align: center;
-      font-size: 0.65rem;
+      margin-top: 0.2rem;
+      font-size: 0.66rem;
       line-height: 1.6;
-      color: rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.35);
     }
   </style>
 </head>
 <body>
 
-  <main id="bard-demo">
-    <header>
+  <div id="bard-demo">
+    <div id="stage-frame"></div>
+
+    <pre id="venue-top" class="venue-frame venue-frame-top" aria-hidden="true"></pre>
+    <pre id="venue-bottom" class="venue-frame venue-frame-bottom" aria-hidden="true"></pre>
+
+    <header class="overlay overlay-top">
       <h1>bard.js<span>v0.1 demo — the amphitheater</span></h1>
       <p class="sub">
         Eight scenes, eight plays, one engine. chorus / enter / exit / line /
-        intermission — nothing else yet, on purpose. This page is dummy test
-        content, not part of the perceptualmechanics site.
+        intermission — nothing else yet, on purpose. The black box is the
+        default stage; the venue below is just paint laid over it. This
+        page is dummy test content, not part of the perceptualmechanics site.
       </p>
     </header>
 
-    <div id="stage-frame"></div>
-
-    <div class="controls">
-      <button data-act="prev">‹ prev</button>
-      <button data-act="play" aria-label="Play or pause">▷ play</button>
-      <button data-act="next">next ›</button>
-      <button data-act="restart">↺ restart</button>
-      <span id="progress">start</span>
-    </div>
-
-    <div id="scene-picker">
-      <p class="picker-label">choose which plays to run</p>
-      <select id="scene-select" multiple size="8"></select>
-      <p class="picker-hint">click to select one · cmd/ctrl-click (or shift-click) for more than one</p>
-      <div class="picker-actions">
-        <button data-picker-act="all">select all</button>
-        <button data-picker-act="none">select none</button>
-        <button data-picker-act="apply" class="primary">▷ shuffle &amp; apply</button>
+    <div class="overlay overlay-bottom">
+      <div class="controls">
+        <button data-act="prev">‹ prev</button>
+        <button data-act="play" aria-label="Play or pause">▷ play</button>
+        <button data-act="next">next ›</button>
+        <button data-act="restart">↺ restart</button>
+        <span id="progress">start</span>
       </div>
-      <p id="picker-note"></p>
-    </div>
 
-    <footer>
-      The Oresteia · Medea · Lysistrata · As You Like It · Macbeth · Candide ·
-      The Misanthrope · The Importance of Being Earnest
-    </footer>
-  </main>
+      <div class="picker-row">
+        <p class="picker-label">choose which plays to run</p>
+        <select id="scene-select" multiple size="8"></select>
+        <p class="picker-hint">click to select one · cmd/ctrl-click (or shift-click) for more than one</p>
+        <div class="picker-actions">
+          <button data-picker-act="all">select all</button>
+          <button data-picker-act="none">select none</button>
+          <button data-picker-act="apply" class="primary">▷ shuffle &amp; apply</button>
+        </div>
+        <p id="picker-note"></p>
+      </div>
+
+      <div class="picker-row">
+        <p class="picker-label">choose a venue</p>
+        <select id="venue-select"></select>
+      </div>
+
+      <footer>
+        The Oresteia · Medea · Lysistrata · As You Like It · Macbeth · Candide ·
+        The Misanthrope · The Importance of Being Earnest
+      </footer>
+    </div>
+  </div>
 
   <script type="module" src="./main.js"></script>
 </body>

@@ -51,27 +51,32 @@ function injectBaseStyles() {
   const style = document.createElement('style');
   style.id = 'bardjs-dom-renderer-styles';
   style.textContent = `
+    /* Sizes use clamp() rather than fixed rems: this renderer is meant to
+       work embedded in a small box or filling an entire viewport (a black
+       box taking up the whole window is the demo's own default stage), and
+       the figures/bubbles/caption should scale to fill whichever it gets. */
     .bard-stage { position: relative; width: 100%; height: 100%;
       display: flex; align-items: flex-end; justify-content: center;
-      gap: 2rem; font-family: 'Courier New', Courier, monospace; }
+      gap: clamp(2rem, 6vw, 6rem); font-family: 'Courier New', Courier, monospace; }
     .bard-actor { position: relative; text-align: center; opacity: 0;
       transform: translateY(8px); transition: opacity .3s, transform .3s; }
     .bard-actor.on { opacity: 1; transform: translateY(0); }
-    .bard-actor pre.bard-mask { margin: 0; line-height: 1.1; font-size: 1.1rem;
-      transition: color .15s; }
+    .bard-actor pre.bard-mask { margin: 0; line-height: 1.1;
+      font-size: clamp(1.4rem, 3.2vw, 2.8rem); transition: color .15s; }
     .bard-actor.talking pre.bard-mask { animation: bard-talk .3s ease-in-out; }
     @keyframes bard-talk { 50% { transform: scale(1.06); } }
-    .bard-name { font-size: .6rem; letter-spacing: .1em; text-transform: uppercase;
-      opacity: .6; margin-top: .25rem; }
+    .bard-name { font-size: clamp(.7rem, 1vw, .95rem); letter-spacing: .1em;
+      text-transform: uppercase; opacity: .6; margin-top: .35rem; }
     .bard-bubble { position: absolute; bottom: 100%; left: 50%;
       transform: translateX(-50%) translateY(6px); white-space: pre;
-      font-size: .7rem; line-height: 1.2; padding: .4rem .1rem; opacity: 0;
+      font-size: clamp(.85rem, 1.3vw, 1.2rem); line-height: 1.2;
+      padding: .4rem .1rem; opacity: 0;
       transition: opacity .2s, transform .2s; pointer-events: none; }
     .bard-bubble.on { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .bard-bubble-name { display: block; font-size: .6rem; text-transform: uppercase;
+    .bard-bubble-name { display: block; font-size: .65rem; text-transform: uppercase;
       letter-spacing: .1em; margin-bottom: .15rem; opacity: .8; }
     .bard-caption { text-align: center; font-style: italic; opacity: .75;
-      min-height: 1.4em; }
+      font-size: clamp(1rem, 1.6vw, 1.5rem); min-height: 1.4em; }
     .bard-sr-live { position: absolute; width: 1px; height: 1px; overflow: hidden;
       clip: rect(0,0,0,0); white-space: nowrap; }
   `;

@@ -16,14 +16,37 @@
 import { Player, compileScript, shuffle } from 'bardjs';
 import { DomRenderer } from 'bardjs/renderers/dom';
 import { CAST, SCENES } from './scenes.js';
+import { VENUES } from './venues.js';
 
 const stageFrame = document.getElementById('stage-frame');
 const progressEl = document.getElementById('progress');
 const playBtn = document.querySelector('[data-act="play"]');
 const sceneSelectEl = document.getElementById('scene-select');
 const pickerNoteEl = document.getElementById('picker-note');
+const venueSelectEl = document.getElementById('venue-select');
+const venueTopEl = document.getElementById('venue-top');
+const venueBottomEl = document.getElementById('venue-bottom');
 
 const renderer = new DomRenderer({ cast: CAST });
+
+function buildVenuePicker() {
+  venueSelectEl.innerHTML = '';
+  VENUES.forEach(venue => {
+    const option = document.createElement('option');
+    option.value = venue.key;
+    option.textContent = venue.label;
+    venueSelectEl.appendChild(option);
+  });
+  venueSelectEl.value = 'none'; // bare black box by default
+}
+
+function applyVenue(key) {
+  const venue = VENUES.find(v => v.key === key) || VENUES[0];
+  venueTopEl.textContent = venue.top;
+  venueBottomEl.textContent = venue.bottom;
+  venueTopEl.style.color = venue.accent;
+  venueBottomEl.style.color = venue.accent;
+}
 
 function buildPicker() {
   sceneSelectEl.innerHTML = '';
@@ -55,6 +78,10 @@ const player = new Player(compileScript(shuffle(SCENES)), renderer, {
 
 player.mount(stageFrame);
 buildPicker();
+buildVenuePicker();
+applyVenue('none');
+
+venueSelectEl.addEventListener('change', () => applyVenue(venueSelectEl.value));
 
 document.querySelector('.controls').addEventListener('click', (e) => {
   const btn = e.target.closest('button');
