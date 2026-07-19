@@ -1,0 +1,13 @@
+{
+  "name": "bardjs",
+  "version": "0.1.0",
+  "description": "A script-to-performance engine, rooted in the amphitheater: a chorus, actors wearing masks, entrances and exits, and dialogue. No cameras, no modern staging — those are amenities for later, not the root.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./renderers/dom": "./src/renderers/DomRenderer.js"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
