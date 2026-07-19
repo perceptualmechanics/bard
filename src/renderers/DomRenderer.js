@@ -148,12 +148,24 @@ export class DomRenderer {
     });
   }
 
+  // Only one line is ever "current" at a time — clear every bubble on stage,
+  // not just the speaking actor's own, or a previous speaker's bubble is
+  // left behind indefinitely (nothing else ever removes it) and overlaps
+  // whoever speaks next. Ported from theater.js's TheaterRenderer, which
+  // already had this right.
+  clearBubbles() {
+    this.stage.querySelectorAll('.bard-bubble').forEach(b => b.remove());
+    Object.values(this.actorEls).forEach(el => el.classList.remove('talking'));
+  }
+
   onChorus(text) {
+    this.clearBubbles();
     this.caption.textContent = text;
     this.srLive.textContent = text;
   }
 
   onLine(key, text, { mask, voice, silent } = {}) {
+    this.clearBubbles();
     const person = this.cast[key] || { name: key };
     const el = this.actorEls[key];
     if (el) {
@@ -169,12 +181,17 @@ export class DomRenderer {
     el.classList.add('talking');
     setTimeout(() => el.classList.remove('talking'), 300);
 
-    el.querySelectorAll('.bard-bubble').forEach(b => b.remove());
     const bubble = document.createElement('div');
     bubble.className = 'bard-bubble';
     bubble.innerHTML = `<span class="bard-bubble-name">${escapeHtml(person.name || key)}${voice ? ' (voice)' : ''}</span>${escapeHtml(asciiBubble(text, false))}`;
     el.appendChild(bubble);
     requestAnimationFrame(() => bubble.classList.add('on'));
+  }
+
+  onIntermission() {
+    this.clearBubbles();
+    this.caption.textContent = '— intermission —';
+    this.srLive.textContent = 'Intermission.';
   }
 
   dispose() {

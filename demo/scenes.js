@@ -46,6 +46,7 @@ export const CAST = {
 
 export const SCENES = [
   {
+    title: 'The Oresteia',
     slug: 'THE ORESTEIA — Aeschylus. The palace steps at Argos.',
     cast: ['clytemnestra', 'agamemnon'],
     events: [
@@ -61,6 +62,7 @@ export const SCENES = [
     ],
   },
   {
+    title: 'Medea',
     slug: 'MEDEA — Euripides. Outside Medea’s house in Corinth.',
     cast: ['medea', 'jason'],
     events: [
@@ -77,6 +79,7 @@ export const SCENES = [
     ],
   },
   {
+    title: 'Lysistrata',
     slug: 'LYSISTRATA — Aristophanes. Outside the Acropolis, Athens.',
     cast: ['lysistrata', 'kalonike'],
     events: [
@@ -91,6 +94,7 @@ export const SCENES = [
     ],
   },
   {
+    title: 'As You Like It',
     slug: 'AS YOU LIKE IT — Shakespeare. The Forest of Arden.',
     cast: ['jaques'],
     events: [
@@ -103,6 +107,7 @@ export const SCENES = [
     ],
   },
   {
+    title: 'Macbeth',
     slug: 'MACBETH — Shakespeare. A cavern. In the middle, a boiling cauldron.',
     cast: ['witch1', 'witch2', 'witch3', 'macbeth'],
     events: [
@@ -118,6 +123,7 @@ export const SCENES = [
     ],
   },
   {
+    title: 'Candide',
     slug: 'CANDIDE — after Voltaire. A modest garden, somewhere quiet at last.',
     cast: ['pangloss', 'candide'],
     events: [
@@ -131,6 +137,7 @@ export const SCENES = [
     ],
   },
   {
+    title: 'The Misanthrope',
     slug: 'THE MISANTHROPE — after Molière. A fashionable Parisian salon.',
     cast: ['alceste', 'philinte'],
     events: [
@@ -144,6 +151,7 @@ export const SCENES = [
     ],
   },
   {
+    title: 'The Importance of Being Earnest',
     slug: 'THE IMPORTANCE OF BEING EARNEST — Wilde. Algernon’s flat, Half-Moon Street.',
     cast: ['algernon', 'jack'],
     events: [

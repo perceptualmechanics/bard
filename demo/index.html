@@ -102,6 +102,84 @@
       text-align: center;
     }
 
+    #scene-picker {
+      margin-top: 1.75rem;
+      border-top: 1px solid rgba(255,255,255,0.12);
+      padding-top: 1rem;
+    }
+
+    #scene-picker .picker-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 0.6rem;
+      text-align: center;
+    }
+
+    #scene-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.4rem 0.75rem;
+      list-style: none;
+    }
+
+    #scene-list li {
+      font-size: 0.72rem;
+    }
+
+    #scene-list label {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      cursor: pointer;
+      color: rgba(255,255,255,0.75);
+    }
+
+    #scene-list input {
+      accent-color: rgba(255,255,255,0.7);
+    }
+
+    .picker-actions {
+      margin-top: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .picker-actions button {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.8);
+      font-family: inherit;
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .picker-actions button:hover,
+    .picker-actions button:focus-visible {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    .picker-actions button.primary {
+      border-color: rgba(255,255,255,0.5);
+    }
+
+    #picker-note {
+      margin-top: 0.5rem;
+      text-align: center;
+      font-size: 0.65rem;
+      color: rgba(255,140,140,0.75);
+      min-height: 1.2em;
+    }
+
     footer {
       margin-top: 2rem;
       text-align: center;
@@ -131,6 +209,17 @@
       <button data-act="next">next ›</button>
       <button data-act="restart">↺ restart</button>
       <span id="progress">start</span>
+    </div>
+
+    <div id="scene-picker">
+      <p class="picker-label">choose which plays to run</p>
+      <ul id="scene-list"></ul>
+      <div class="picker-actions">
+        <button data-picker-act="all">select all</button>
+        <button data-picker-act="none">select none</button>
+        <button data-picker-act="apply" class="primary">▷ apply &amp; restart</button>
+      </div>
+      <p id="picker-note"></p>
     </div>
 
     <footer>
