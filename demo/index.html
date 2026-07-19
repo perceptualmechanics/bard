@@ -226,6 +226,26 @@
       line-height: 1.6;
       color: rgba(255,255,255,0.35);
     }
+
+    /* The scene/venue pickers are collapsed by default. An 8-option select
+       plus a venue select plus the footer easily runs 400-500px tall — on a
+       typical laptop viewport, having all of that permanently open leaves
+       #stage-frame almost no vertical room, which is exactly what pushed
+       the actor row up into the venue banner. Closed by default keeps the
+       overlay-bottom footprint to just the playback controls; opening it
+       is a deliberate, temporary trade of stage space for picking a play. */
+    #options-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.12);
+    }
+
+    #options-panel[hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -253,29 +273,32 @@
         <button data-act="next">next ›</button>
         <button data-act="restart">↺ restart</button>
         <span id="progress">start</span>
+        <button data-act="options" aria-expanded="false" aria-controls="options-panel">⚙ options</button>
       </div>
 
-      <div class="picker-row">
-        <p class="picker-label">choose which plays to run</p>
-        <select id="scene-select" multiple size="8"></select>
-        <p class="picker-hint">click to select one · cmd/ctrl-click (or shift-click) for more than one</p>
-        <div class="picker-actions">
-          <button data-picker-act="all">select all</button>
-          <button data-picker-act="none">select none</button>
-          <button data-picker-act="apply" class="primary">▷ shuffle &amp; apply</button>
+      <div id="options-panel" hidden>
+        <div class="picker-row">
+          <p class="picker-label">choose which plays to run</p>
+          <select id="scene-select" multiple size="8"></select>
+          <p class="picker-hint">click to select one · cmd/ctrl-click (or shift-click) for more than one</p>
+          <div class="picker-actions">
+            <button data-picker-act="all">select all</button>
+            <button data-picker-act="none">select none</button>
+            <button data-picker-act="apply" class="primary">▷ shuffle &amp; apply</button>
+          </div>
+          <p id="picker-note"></p>
         </div>
-        <p id="picker-note"></p>
-      </div>
 
-      <div class="picker-row">
-        <p class="picker-label">choose a venue</p>
-        <select id="venue-select"></select>
-      </div>
+        <div class="picker-row">
+          <p class="picker-label">choose a venue</p>
+          <select id="venue-select"></select>
+        </div>
 
-      <footer>
-        The Oresteia · Medea · Lysistrata · As You Like It · Macbeth · Candide ·
-        The Misanthrope · The Importance of Being Earnest
-      </footer>
+        <footer>
+          The Oresteia · Medea · Lysistrata · As You Like It · Macbeth · Candide ·
+          The Misanthrope · The Importance of Being Earnest
+        </footer>
+      </div>
     </div>
   </div>
 

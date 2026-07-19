@@ -82,7 +82,8 @@ function injectBaseStyles() {
     .bard-bubble-name { display: block; font-size: .65rem; text-transform: uppercase;
       letter-spacing: .1em; margin-bottom: .15rem; opacity: .8; }
     .bard-caption { text-align: center; font-style: italic; opacity: .75;
-      font-size: clamp(1rem, 1.6vw, 1.5rem); min-height: 1.4em; }
+      font-size: clamp(1rem, 1.6vw, 1.5rem); min-height: 1.4em;
+      max-width: 46rem; margin-left: auto; margin-right: auto; }
     .bard-sr-live { position: absolute; width: 1px; height: 1px; overflow: hidden;
       clip: rect(0,0,0,0); white-space: nowrap; }
   `;

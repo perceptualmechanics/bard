@@ -26,6 +26,8 @@ const pickerNoteEl = document.getElementById('picker-note');
 const venueSelectEl = document.getElementById('venue-select');
 const venueTopEl = document.getElementById('venue-top');
 const venueBottomEl = document.getElementById('venue-bottom');
+const optionsPanelEl = document.getElementById('options-panel');
+const optionsBtn = document.querySelector('[data-act="options"]');
 
 const overlayTopEl = document.querySelector('.overlay-top');
 const overlayBottomEl = document.querySelector('.overlay-bottom');
@@ -123,6 +125,12 @@ document.querySelector('.controls').addEventListener('click', (e) => {
     player.restart(compileScript(shuffle(chosen.length ? chosen : SCENES)));
     setPlayLabel();
     updateProgress();
+  } else if (act === 'options') {
+    optionsPanelEl.hidden = !optionsPanelEl.hidden;
+    optionsBtn.setAttribute('aria-expanded', String(!optionsPanelEl.hidden));
+    // Opening/closing the panel changes overlay-bottom's real height —
+    // re-measure so the stage reclaims (or yields) the right amount of room.
+    requestAnimationFrame(syncLayout);
   }
 });
 
