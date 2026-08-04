@@ -4,10 +4,20 @@
   "description": "A script-to-performance engine, rooted in the amphitheater: a chorus, actors wearing masks, entrances and exits, and dialogue. No cameras, no modern staging — those are amenities for later, not the root.",
   "type": "module",
   "main": "src/index.js",
+  "scripts": {
+    "test": "node --test"
+  },
   "exports": {
     ".": "./src/index.js",
     "./renderers/dom": "./src/renderers/DomRenderer.js"
   },
-  "license": "UNLICENSED",
-  "private": true
+  "license": "CC0-1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/perceptualmechanics/bard.git"
+  },
+  "homepage": "https://github.com/perceptualmechanics/bard#readme",
+  "bugs": {
+    "url": "https://github.com/perceptualmechanics/bard/issues"
+  }
 }

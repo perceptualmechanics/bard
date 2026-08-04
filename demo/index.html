@@ -302,6 +302,21 @@
     </div>
   </div>
 
+  <!-- This demo used to be served only as a Vite multi-page entry inside
+       perceptualmechanics' own dev server, which resolved the bare
+       'bardjs' specifier below via npm workspaces (packages/* symlinked
+       into node_modules). Now that this is its own standalone repo, that
+       resolution mechanism doesn't exist -- opening this file (or serving
+       it with any plain static server) would fail with an unresolved-
+       specifier error without this import map. Points straight at the
+       package's own source rather than a built artifact, since there is
+       no build step here on purpose. -->
+  <script type="importmap">
+    { "imports": {
+        "bardjs": "../src/index.js",
+        "bardjs/renderers/dom": "../src/renderers/DomRenderer.js"
+    } }
+  </script>
   <script type="module" src="./main.js"></script>
 </body>
 </html>
