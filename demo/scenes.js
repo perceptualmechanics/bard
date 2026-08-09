@@ -11,8 +11,38 @@
 
 export const CAST = {
   // The Oresteia (Aeschylus)
-  clytemnestra: { name: 'Clytemnestra', color: '#b83b5e' },
-  agamemnon:    { name: 'Agamemnon',    color: '#c9a227' },
+  //
+  // Masks (proof of concept — see README's "Masks" section) assigned to
+  // this scene specifically, not invented for the occasion: the text
+  // itself stages a mask being worn. Clytemnestra's welcome speech ("Let
+  // the earth itself be dressed in purple...") is the play's own famous
+  // piece of dramatic irony — a hospitality performance laid over a
+  // long-planned killing (Agamemnon sacrificed their daughter Iphigenia
+  // for a fair wind to Troy; this is her answer to it). The `avenger`
+  // mask goes on the moment she enters, before she speaks a word of that
+  // welcome — the persona and the intent underneath it are both hers,
+  // both visible, at once. Agamemnon's own fear of the tapestries ("I
+  // fear to walk on cloth this fine") is a man sensing, without naming
+  // it, that the authority he's about to accept isn't his to wear safely
+  // — the `king` mask goes on him at his entrance for the same reason.
+  // Colors below are chosen to be distinct from both wearers' own persona
+  // colors (pink, gold) and from each other — the color is what marks
+  // "this is a worn mask, not the character's own face," so it can't
+  // reuse either. See src/renderers/DomRenderer.js's header comment for
+  // why color (not glyph position or a bigger font) is the mechanism.
+  clytemnestra: { name: 'Clytemnestra', color: '#b83b5e', archetypeMasks: {
+    avenger: { color: '#c0392b', lines: [
+      ' \\ / ',
+      '  X  ',
+      ' / \\ ',
+    ] },
+  } },
+  agamemnon: { name: 'Agamemnon', color: '#c9a227', archetypeMasks: {
+    king: { color: '#8e5fc9', lines: [
+      '/\\/\\/\\',
+      '------',
+    ] },
+  } },
 
   // Medea (Euripides)
   medea: { name: 'Medea', color: '#8e44ad' },
@@ -52,8 +82,10 @@ export const SCENES = [
     events: [
       { type: 'chorus', text: 'Ten years of war are over. Agamemnon returns from Troy — and his wife has been waiting a long time.' },
       { type: 'enter', keys: ['clytemnestra'] },
+      { type: 'mask', key: 'clytemnestra', mask: 'avenger' },
       { type: 'line', key: 'clytemnestra', text: 'Welcome home, my king. Let the earth itself be dressed in purple for the man who conquered Troy.' },
       { type: 'enter', keys: ['agamemnon'] },
+      { type: 'mask', key: 'agamemnon', mask: 'king' },
       { type: 'line', key: 'agamemnon', text: 'Such honors belong to the gods, wife, not to a mortal man. I fear to walk on cloth this fine.' },
       { type: 'line', key: 'clytemnestra', text: 'And yet you will. Walk the path I have laid for you — you have earned this much, at least.' },
       { type: 'chorus', text: 'He crosses the crimson tapestries into the house. The chorus feels, without knowing why, that something terrible has already been decided.' },

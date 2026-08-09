@@ -25,6 +25,15 @@
 // filed under "modern amenity." It carries no payload; what an intermission
 // actually looks like (a bumper card, silence, nothing at all) is entirely
 // the renderer's or the consuming site's call.
+//
+// A sixth and seventh, `mask`/`unmask` (proof of concept), let a scene
+// script an actor putting on and taking off an archetypal mask — worn
+// visibly alongside their own identity, Julie Taymor's Lion King staging
+// rather than a disguise or a swap. Not the same thing as `line`'s own
+// `mask` field below (that's a per-line ASCII pose change in DomRenderer,
+// reverting after that one line); this is a standing state, authored the
+// same deliberate way as enter/exit, lasting across every `line` for that
+// character until a matching `unmask` or an `exit`.
 
 /**
  * @typedef {{ type: 'chorus', text: string }} ChorusEvent
@@ -32,7 +41,9 @@
  * @typedef {{ type: 'exit',  keys: string[] }} ExitEvent
  * @typedef {{ type: 'line', key: string, text: string, mask?: string,
  *             voice?: boolean, silent?: boolean }} LineEvent
- * @typedef {ChorusEvent|EnterEvent|ExitEvent|LineEvent} StageEvent
+ * @typedef {{ type: 'mask', key: string, mask: string }} MaskEvent
+ * @typedef {{ type: 'unmask', key: string }} UnmaskEvent
+ * @typedef {ChorusEvent|EnterEvent|ExitEvent|LineEvent|MaskEvent|UnmaskEvent} StageEvent
  */
 
 /**

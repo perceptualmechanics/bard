@@ -25,6 +25,12 @@ an old idea, so it stays part of the root rather than getting filed under
 "modern amenity." It carries no payload; what an intermission looks like
 is entirely up to the renderer.
 
+A sixth and seventh, **mask** and **unmask** (proof of concept — see
+"Masks" below), let a scene script an actor putting on and taking off an
+archetypal mask, worn visibly alongside their own identity rather than
+swapped in over it. Masked state persists across every subsequent `line`
+for that character until a matching `unmask` or an `exit`.
+
 ## Why this exists
 
 Traditional screenwriting has a production problem: the script stops being
@@ -39,9 +45,9 @@ with nothing standing between writing it and seeing it happen.
   a time — play, pause, next, prev, goTo, restart. It knows nothing about
   how anything is drawn.
 - **A renderer** is any object with (some subset of) `mount`,
-  `onSceneChange`, `onChorus`, `onEnter`, `onExit`, `onLine`,
-  `onIntermission`, `onEnd`, `dispose`. `Player` calls whichever methods
-  exist and skips the rest.
+  `onSceneChange`, `onChorus`, `onEnter`, `onExit`, `onLine`, `onMask`,
+  `onUnmask`, `onIntermission`, `onEnd`, `dispose`. `Player` calls whichever
+  methods exist and skips the rest.
 - **`renderers/dom`** ships the reference renderer: ASCII masks, cowsay-
   style speech bubbles, a caption line for the chorus. It's the "bare
   stage" version on purpose — a richer renderer (Three.js figures, a real
@@ -82,6 +88,58 @@ const player = new Player(script, renderer);
 player.mount(document.querySelector('#stage'));
 player.play();
 ```
+
+## Masks (proof of concept)
+
+A mask is worn, not substituted. The character underneath stays fully
+themselves, speaking as themselves — the mask layers on top, visibly, the
+way Julie Taymor's *Lion King* masks sit above and around an actor's own
+face rather than replacing it. Script it into a scene the same deliberate
+way as `enter`/`exit`/`line`:
+
+```js
+{ type: 'enter', keys: ['brian'] },
+{ type: 'line', key: 'brian', text: 'Just myself, for now.' },
+{ type: 'mask', key: 'brian', mask: 'trickster' },
+{ type: 'line', key: 'brian', text: 'Still myself — just wearing something else too.' },
+{ type: 'unmask', key: 'brian' },
+```
+
+`mask` should reference an archetype backed by found text, not invented
+copy — see this project's own standing rule against authoring new material
+for a staged piece. A renderer implements the optional `onMask(key, mask)`
+/ `onUnmask(key)` methods to draw whatever it wants for that archetype;
+`DomRenderer` supplies each cast member's archetypes as
+`archetypeMasks: { [name]: { lines: string[], color?: string } }`.
+
+That shape (an object with `lines` *and* `color`, not a bare array like
+`masks` below) reflects a real lesson from building this: a physical mask
+can sit in front of an actor's real face because a stage has depth — two
+solid things sharing one line of sight without touching. An ASCII grid has
+no depth; every cell holds exactly one glyph, so a first attempt at this
+that drew the archetype "behind and around" the face's own characters
+ended up editing cells the face was already using — one glyph changed in
+place, not two things visible at once, the opposite of the Taymor
+principle above. `DomRenderer` instead renders the archetype as its own
+small glyph, positioned just above the head where it never touches the
+face's character cells, in its own color (distinct from the wearer's own
+persona color) — two separately legible objects in two colors is what
+actually reads as "worn," in a medium with no way to layer depth.
+
+**This is a different thing from `line`'s own `mask` field**, despite the
+shared word. `DomRenderer` already used "mask" for its per-character ASCII
+face (configured via `masks: { idle, ... }` on a cast member, and
+optionally swapped for a single line via `{ type: 'line', mask: 'angry' }`)
+before this feature existed — that's a transient pose change, reverting
+right after the line it's set on. `mask`/`unmask` events are a standing
+state layered on top of that, kept deliberately separate in config
+(`archetypeMasks`, not `masks`) and in markup (`.bard-archetype`, not
+`.bard-mask`) so the two can't be confused for each other.
+
+This is currently scoped as a proof of concept: it stays inside this
+package's own demo/tests, doesn't have a browsing or gallery UI, and a
+mask never carries across scenes — it's scripted into one scene's own
+event list, same as any other event.
 
 ## Authoring a scene (Fountain)
 

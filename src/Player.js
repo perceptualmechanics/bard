@@ -12,9 +12,22 @@
 //   onEnter(keys)
 //   onExit(keys)
 //   onLine(key, text, { mask, voice, silent })
+//   onMask(key, mask)
+//   onUnmask(key)
 //   onIntermission()
 //   onEnd()
 //   dispose()
+//
+// onMask/onUnmask are a different thing from onLine's own `mask` option
+// above, despite the shared word — onLine's `mask` is a per-line pose swap
+// (DomRenderer's ASCII face for *this line only*, reverting to idle right
+// after). onMask/onUnmask are a worn archetype: authored as its own event,
+// layered on top of a character's own identity rather than swapping it out,
+// and left on for however many subsequent lines the script keeps it there
+// (until a matching `unmask`, or the character exits). Player doesn't track
+// which characters are currently masked — same as it never tracked who's
+// currently on stage — that bookkeeping belongs to whatever renderer needs
+// it, same pattern as onEnter/onExit.
 //
 // Pacing: read at human reading speed, not AI reading speed — the same
 // heuristic theater.js worked out by hand (clamp text.length*55ms to
@@ -133,6 +146,12 @@ export class Player {
         this.renderer.onLine?.(event.key, event.text, {
           mask: event.mask, voice: event.voice, silent: event.silent,
         });
+        break;
+      case 'mask':
+        this.renderer.onMask?.(event.key, event.mask);
+        break;
+      case 'unmask':
+        this.renderer.onUnmask?.(event.key);
         break;
       case 'intermission':
         this.renderer.onIntermission?.();
