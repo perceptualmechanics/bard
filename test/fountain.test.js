@@ -1,7 +1,3 @@
-// ─── bard.js: fountain tests ────────────────────────────────────────────────
-// Node's built-in test runner (node:test / node:assert) — no new dependency
-// for a project that otherwise has zero, matching the rest of bard.js.
-// Run with: node --test
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseFountainScript, compileFountainScript } from '../src/fountain.js';
@@ -110,7 +106,6 @@ test('an unrecognized leading block is not mistaken for a title page', () => {
   const src = `Just some action before any heading.\n\nINT. BAR\n\nMore action.`;
   const { meta, scenes } = parseFountainScript(src);
   assert.equal(meta, null);
-  // the pre-heading content becomes its own untitled scene, not discarded
   assert.equal(scenes[0].slug, '');
   assert.equal(scenes[0].events[0].text, 'Just some action before any heading.');
 });
@@ -120,7 +115,6 @@ test('compileFountainScript flattens to a Player-ready script and carries meta/c
   const script = compileFountainScript(src);
   assert.equal(script.meta.title, 'Two Scenes');
   assert.deepEqual(script.castNames, { brian: 'BRIAN', paul: 'PAUL' });
-  // one intermission between the two scenes, same rule compileScript always uses
   assert.equal(script.timeline.filter(t => t.event.type === 'intermission').length, 1);
 });
 
@@ -138,9 +132,6 @@ test('end-to-end: a parsed script plays through Player with a stub renderer, no 
   };
   const player = new Player(script, stubRenderer);
   player.mount({});
-  // Walk every beat manually rather than relying on the internal setTimeout
-  // pacing — this is a logic smoke test (does the whole pipeline run without
-  // throwing and in the right order), not a timing test.
   for (let i = 0; i < script.timeline.length; i++) player.goTo(i);
 
   assert.deepEqual(calls[0], ['mount']);
@@ -151,9 +142,66 @@ test('end-to-end: a parsed script plays through Player with a stub renderer, no 
   assert.deepEqual(calls[5], ['onEnter', ['paul']]);
   assert.deepEqual(calls[6], ['onLine', 'paul', 'Hi.']);
   assert.deepEqual(calls[7], ['onSceneChange', 'EXT. STREET']);
-  // brian enters again in the new scene — compile.js never carries "on
-  // stage" state across a scene boundary, matching compileLegacyScene.
   assert.deepEqual(calls[8], ['onEnter', ['brian']]);
   assert.deepEqual(calls[9], ['onLine', 'brian', 'Outside now.']);
   assert.deepEqual(calls[10], ['onEnd']);
+});
+
+
+
+function stub(calls = []) {
+  return {
+    onSceneChange: () => calls.push('scene'),
+    onChorus: () => calls.push('chorus'),
+    onLine: () => calls.push('line'),
+    onEnd: () => calls.push('end'),
+    dispose: () => calls.push('dispose'),
+  };
+}
+
+test('play() on a finished reel reports paused rather than a play that never advances', () => {
+  const script = compileFountainScript(`INT. BAR\n\nOne.\n\nTwo.`, { intermissions: false });
+  const player = new Player(script, stub());
+  player.goTo(script.timeline.length - 1);
+  assert.equal(player.isAtEnd, true);
+  assert.equal(player.playing, false); // goTo() clears it on landing at the end
+  player.play();
+  assert.equal(player.playing, false);
+});
+
+test('dispose() makes the player inert — play/next/restart stop mutating it', () => {
+  const script = compileFountainScript(`INT. BAR\n\nOne.\n\nTwo.\n\nThree.`, { intermissions: false });
+  const calls = [];
+  const player = new Player(script, stub(calls));
+  player.goTo(0);
+  const indexAtDispose = player.index;
+  player.dispose();
+  assert.deepEqual(calls.at(-1), 'dispose');
+  const before = calls.length;
+  player.play();
+  player.next();
+  player.restart(script);
+  assert.equal(player.playing, false);
+  assert.equal(player.index, indexAtDispose);
+  assert.equal(calls.length, before, 'no renderer call after dispose');
+});
+
+test('restart({ autoplay: false }) starts the new script at beat 0 without playing', () => {
+  const script = compileFountainScript(`INT. BAR\n\nOne.\n\nTwo.\n\nThree.`, { intermissions: false });
+  const player = new Player(script, stub());
+  player.restart(script, { autoplay: false });
+  assert.equal(player.index, 0);
+  assert.equal(player.playing, false);
+  player.restart(script);
+  assert.equal(player.playing, true);
+  player.dispose();
+});
+
+test('an empty timeline sits still instead of throwing on goTo/play', () => {
+  const player = new Player({ scenes: [], timeline: [] }, stub());
+  assert.doesNotThrow(() => player.goTo(0));
+  assert.doesNotThrow(() => player.play());
+  assert.doesNotThrow(() => player.next());
+  assert.equal(player.index, -1);
+  assert.equal(player.playing, false);
 });

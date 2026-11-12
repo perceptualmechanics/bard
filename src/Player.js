@@ -1,39 +1,5 @@
-// ─── bard.js: Player ────────────────────────────────────────────────────────
-// Walks a compiled { scenes, timeline } script one event at a time and
-// calls the matching method on a renderer. This is the entire "engine": it
-// knows nothing about DOM, canvas, WebGL, cowsay bubbles, or ASCII figures —
-// that's all the renderer's job. It only knows how to hold a position in a
-// flat list of events and move forward, backward, or on a timer.
-//
-// Renderer contract (all optional — Player checks before calling):
-//   mount(container)
-//   onSceneChange(scene, sceneIndex)
-//   onChorus(text)
-//   onEnter(keys)
-//   onExit(keys)
-//   onLine(key, text, { mask, voice, silent })
-//   onMask(key, mask)
-//   onUnmask(key)
-//   onIntermission()
-//   onEnd()
-//   dispose()
-//
-// onMask/onUnmask are a different thing from onLine's own `mask` option
-// above, despite the shared word — onLine's `mask` is a per-line pose swap
-// (DomRenderer's ASCII face for *this line only*, reverting to idle right
-// after). onMask/onUnmask are a worn archetype: authored as its own event,
-// layered on top of a character's own identity rather than swapping it out,
-// and left on for however many subsequent lines the script keeps it there
-// (until a matching `unmask`, or the character exits). Player doesn't track
-// which characters are currently masked — same as it never tracked who's
-// currently on stage — that bookkeeping belongs to whatever renderer needs
-// it, same pattern as onEnter/onExit.
-//
-// Pacing: read at human reading speed, not AI reading speed — the same
-// heuristic theater.js worked out by hand (clamp text.length*55ms to
-// 1900-10000ms), generalized here so any consumer gets it for free.
 const MIN_DUR = 1900;
-const MAX_DUR = 10000;
+const MAX_DUR = 40000;
 const MS_PER_CHAR = 55;
 const INTERMISSION_DUR = 4400;
 
@@ -51,6 +17,7 @@ export class Player {
     this.curSceneIndex = -1;
     this.playing = false;
     this._timer = null;
+    this._disposed = false;
   }
 
   mount(container) {
@@ -67,10 +34,12 @@ export class Player {
   }
 
   play() {
+    if (this._disposed || !this.length) return this;
+    if (this.isAtEnd && this.index >= 0) {
+      this.playing = false;
+      return this;
+    }
     this.playing = true;
-    // A fresh (or just-restarted) player has no current event yet — start
-    // at the beginning rather than trying to schedule a beat that doesn't
-    // exist. goTo(0) will call _scheduleNext() itself once playing is true.
     if (this.index < 0) return this.goTo(0);
     this._scheduleNext();
     return this;
@@ -94,17 +63,28 @@ export class Player {
     return this.goTo(this.index - 1);
   }
 
-  /** Replace the script in place (e.g. a reshuffled program) and start over. */
-  restart(script) {
+  /**
+   * Replace the script in place (e.g. a reshuffled program) and start over.
+   * @param {object} [script]
+   * @param {{ autoplay?: boolean }} [opts] autoplay defaults to true, which
+   *   is what "start over" has always meant here. Pass false when the
+   *   consumer knows the reel should sit still — a visitor with
+   *   prefers-reduced-motion set, say, who asked for the next programme but
+   *   not for it to advance itself.
+   */
+  restart(script, opts = {}) {
+    if (this._disposed) return this;
     if (script) this.script = script;
     this.curSceneIndex = -1;
     this.index = -1;
-    this.playing = true;
+    this.playing = opts.autoplay ?? true;
     return this.goTo(0);
   }
 
   goTo(newIndex) {
+    if (this._disposed) return this;
     clearTimeout(this._timer);
+    if (!this.length) return this;
     const clamped = Math.max(0, Math.min(this.length - 1, newIndex));
     this.index = clamped;
 
@@ -127,7 +107,10 @@ export class Player {
   }
 
   dispose() {
+    this._disposed = true;
+    this.playing = false;
     clearTimeout(this._timer);
+    this._timer = null;
     this.renderer.dispose?.();
   }
 
@@ -157,16 +140,13 @@ export class Player {
         this.renderer.onIntermission?.();
         break;
       default:
-        // Forward-compatible with future event types (camera, blocking,
-        // sound) a later layer might add — an engine built only for Greek
-        // theater shouldn't hard-fail on a beat type it doesn't recognize.
         this.renderer.onUnknownEvent?.(event);
     }
   }
 
   _scheduleNext() {
     clearTimeout(this._timer);
-    if (!this.playing || this.isAtEnd) return;
+    if (this._disposed || !this.playing || this.isAtEnd) return;
     const { event } = this.script.timeline[this.index];
     const dur = event.type === 'intermission'
       ? INTERMISSION_DUR

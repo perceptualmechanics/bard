@@ -1,14 +1,3 @@
-// ─── bard.js: DomRenderer mask/unmask logic smoke test ─────────────────────
-// mask.test.js already covers Player-level dispatch with a stub renderer.
-// This file goes one layer deeper and exercises the *real* DomRenderer, but
-// still headlessly: rather than pull in jsdom as a new dependency (or open
-// a real browser, which this environment can't do), it installs a minimal
-// hand-rolled `document`/element stub with just enough surface area
-// (createElement, classList, textContent, querySelector, appendChild) for
-// DomRenderer's own code to run unmodified. This confirms the wiring —
-// right element found, right class toggled, right text set — not that CSS
-// actually paints the overlay; that part is a visual claim this test
-// doesn't and can't make.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -102,8 +91,6 @@ test('DomRenderer.onMask sets the archetype overlay text and color, adds the .ma
     const facePre = actorEl.querySelector('pre.bard-mask');
     const archetypePre = actorEl.querySelector('pre.bard-archetype');
 
-    // Before masking: overlay exists but is empty, face shows idle in its
-    // own persona color.
     assert.equal(archetypePre.textContent, '');
     assert.equal(facePre.textContent, '(o)\n/|\\\n/ \\');
     assert.equal(facePre.style.color, '#1d4e89');
@@ -112,21 +99,14 @@ test('DomRenderer.onMask sets the archetype overlay text and color, adds the .ma
     renderer.onMask('brian', 'trickster');
 
     assert.equal(archetypePre.textContent, '*  *\n ** ');
-    // The separating channel is color, not position or content overlap —
-    // the archetype's color must differ from the wearer's own.
     assert.equal(archetypePre.style.color, '#c0392b');
     assert.notEqual(archetypePre.style.color, facePre.style.color);
     assert.equal(actorEl.classList.contains('masked'), true);
-    // Additive, not a swap — the face is exactly what it was before masking,
-    // same text AND same color. A first pass at this got this wrong by
-    // editing the face's own glyph; this asserts that mistake can't recur.
     assert.equal(facePre.textContent, '(o)\n/|\\\n/ \\');
     assert.equal(facePre.style.color, '#1d4e89');
 
     renderer.onUnmask('brian');
     assert.equal(actorEl.classList.contains('masked'), false);
-    // Unmask only toggles visibility — it doesn't need to erase the text,
-    // since the .masked class alone controls whether it's shown.
     assert.equal(facePre.textContent, '(o)\n/|\\\n/ \\');
   } finally {
     teardownFakeDom();
@@ -206,8 +186,6 @@ test('two actors masked with different archetypes get visually distinct colors f
       renderer.actorEls.agamemnon.querySelector('pre.bard-mask').style.color,
       renderer.actorEls.agamemnon.querySelector('pre.bard-archetype').style.color,
     ]);
-    // Four colors, no two objects sharing one — the only thing standing in
-    // for "these are two separate things" in a flat character grid.
     assert.equal(colors.size, 4);
   } finally {
     teardownFakeDom();

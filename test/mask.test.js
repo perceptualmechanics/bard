@@ -1,10 +1,3 @@
-// ─── bard.js: mask/unmask tests ─────────────────────────────────────────────
-// Proof-of-concept event pair (see Player.js's own onMask/onUnmask comment
-// and README's vocabulary section). These are pure Player-dispatch tests —
-// no DOM, same reasoning as fountain.test.js's stub-renderer smoke test:
-// DomRenderer itself needs a real browser (it calls document.createElement
-// with no environment guard, unlike injectBaseStyles), so its actual
-// rendering is verified manually against the demo, not here.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { compileScript } from '../src/compile.js';
@@ -76,8 +69,6 @@ test('a mask left on when the character exits never gets an explicit unmask call
 
   const types = calls.map(c => c[0]);
   assert.deepEqual(types, ['onSceneChange', 'onEnter', 'onMask', 'onLine', 'onExit', 'onEnd']);
-  // Player itself never synthesizes an unmask — confirms it's not tracking
-  // masked state at all, exactly like it never tracks who's on stage.
   assert.ok(!types.includes('onUnmask'));
 });
 
@@ -95,8 +86,6 @@ test('Player never throws when a renderer implements neither onMask nor onUnmask
   };
   const script = compileScript([scene], { intermissions: false });
   const calls = [];
-  // A minimal renderer with no mask support at all — matches the "all
-  // optional" contract every other event type already gets.
   const renderer = {
     onLine: (key, text) => calls.push(['onLine', key, text]),
   };

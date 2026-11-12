@@ -91,11 +91,9 @@ player.play();
 
 ## Masks (proof of concept)
 
-A mask is worn, not substituted. The character underneath stays fully
-themselves, speaking as themselves — the mask layers on top, visibly, the
-way Julie Taymor's *Lion King* masks sit above and around an actor's own
-face rather than replacing it. Script it into a scene the same deliberate
-way as `enter`/`exit`/`line`:
+A mask is worn, not substituted: the character underneath stays themselves,
+and the mask sits on top of them, the way Julie Taymor's *Lion King* masks
+sit above an actor's own face. Script it like `enter`/`exit`/`line`:
 
 ```js
 { type: 'enter', keys: ['brian'] },
@@ -105,41 +103,25 @@ way as `enter`/`exit`/`line`:
 { type: 'unmask', key: 'brian' },
 ```
 
-`mask` should reference an archetype backed by found text, not invented
-copy — see this project's own standing rule against authoring new material
-for a staged piece. A renderer implements the optional `onMask(key, mask)`
-/ `onUnmask(key)` methods to draw whatever it wants for that archetype;
-`DomRenderer` supplies each cast member's archetypes as
+`mask` should name an archetype the play's own text supports, not one
+invented for the occasion. A renderer draws it through the optional
+`onMask(key, mask)` / `onUnmask(key)`; `DomRenderer` takes each cast
+member's archetypes as
 `archetypeMasks: { [name]: { lines: string[], color?: string } }`.
 
-That shape (an object with `lines` *and* `color`, not a bare array like
-`masks` below) reflects a real lesson from building this: a physical mask
-can sit in front of an actor's real face because a stage has depth — two
-solid things sharing one line of sight without touching. An ASCII grid has
-no depth; every cell holds exactly one glyph, so a first attempt at this
-that drew the archetype "behind and around" the face's own characters
-ended up editing cells the face was already using — one glyph changed in
-place, not two things visible at once, the opposite of the Taymor
-principle above. `DomRenderer` instead renders the archetype as its own
-small glyph, positioned just above the head where it never touches the
-face's character cells, in its own color (distinct from the wearer's own
-persona color) — two separately legible objects in two colors is what
-actually reads as "worn," in a medium with no way to layer depth.
+An ASCII grid has no depth: every cell holds one glyph, so a mask drawn
+into the face's cells replaces the face instead of sitting in front of
+it. `DomRenderer` draws the archetype as its own glyph above the head, in
+its own colour, distinct from the wearer's: two legible objects instead
+of one edited one.
 
-**This is a different thing from `line`'s own `mask` field**, despite the
-shared word. `DomRenderer` already used "mask" for its per-character ASCII
-face (configured via `masks: { idle, ... }` on a cast member, and
-optionally swapped for a single line via `{ type: 'line', mask: 'angry' }`)
-before this feature existed — that's a transient pose change, reverting
-right after the line it's set on. `mask`/`unmask` events are a standing
-state layered on top of that, kept deliberately separate in config
-(`archetypeMasks`, not `masks`) and in markup (`.bard-archetype`, not
-`.bard-mask`) so the two can't be confused for each other.
+This is not `line`'s `mask` field, despite the word. That one picks a
+per-line pose from a cast member's `masks` (`.bard-mask` in the markup)
+and reverts after the line; worn masks are standing state, configured as
+`archetypeMasks` and drawn as `.bard-archetype`.
 
-This is currently scoped as a proof of concept: it stays inside this
-package's own demo/tests, doesn't have a browsing or gallery UI, and a
-mask never carries across scenes — it's scripted into one scene's own
-event list, same as any other event.
+It stays a proof of concept: it lives in this package's demo and tests,
+and a mask never carries across scenes.
 
 ## Authoring a scene (Fountain)
 

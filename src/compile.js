@@ -1,39 +1,3 @@
-// ─── bard.js: compile ──────────────────────────────────────────────────────
-// The amphitheater has exactly four things that happen on its stage:
-//
-//   chorus  — narration / stage direction, spoken by no one in particular
-//   enter   — one or more actors step onto the orchestra
-//   exit    — one or more actors leave it
-//   line    — an actor, present on stage, speaks
-//
-// That's the whole vocabulary. No camera (there is no camera — the audience
-// has one fixed seat, the amphitheater itself), no blocking coordinates, no
-// lighting cues, no sets beyond "which scene are we in." Those are modern
-// amenities, deliberately left for a later, separate layer to add on top of
-// this one. This file only ever produces those four event shapes, and the
-// Player only ever knows how to walk a flat list of them.
-//
-// A compiled script is: { scenes: [ { slug, cast, timeline: [...events] } ] }
-// A flattened timeline (what Player actually walks) tags every event with
-// its sceneIndex so the Player can announce scene changes as it crosses a
-// boundary, without the events themselves needing to know about scenes.
-//
-// A fifth event, `intermission`, marks the gap between one performed piece
-// and the next within a single sitting — a festival of several plays back
-// to back is itself an old idea (the City Dionysia performed tetralogies
-// in a day), so this stays part of the root vocabulary rather than getting
-// filed under "modern amenity." It carries no payload; what an intermission
-// actually looks like (a bumper card, silence, nothing at all) is entirely
-// the renderer's or the consuming site's call.
-//
-// A sixth and seventh, `mask`/`unmask` (proof of concept), let a scene
-// script an actor putting on and taking off an archetypal mask — worn
-// visibly alongside their own identity, Julie Taymor's Lion King staging
-// rather than a disguise or a swap. Not the same thing as `line`'s own
-// `mask` field below (that's a per-line ASCII pose change in DomRenderer,
-// reverting after that one line); this is a standing state, authored the
-// same deliberate way as enter/exit, lasting across every `line` for that
-// character until a matching `unmask` or an `exit`.
 
 /**
  * @typedef {{ type: 'chorus', text: string }} ChorusEvent
@@ -122,7 +86,7 @@ export function compileLegacyScene(scene) {
   return { slug: scene.slug, cast: scene.order, events };
 }
 
-/** Convenience: run compileLegacyScene across a whole SCENES array, then compileScript. */
+
 export function compileLegacyScript(legacyScenes) {
   return compileScript(legacyScenes.map(compileLegacyScene));
 }

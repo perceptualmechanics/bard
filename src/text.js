@@ -1,8 +1,3 @@
-// ─── bard.js: text ──────────────────────────────────────────────────────────
-// Cowsay-style ASCII speech-bubble formatting, pulled out of DomRenderer so
-// any consumer building its own renderer (perceptualmechanics' theater.js
-// does exactly this — a custom staged renderer, not DomRenderer) can reuse
-// the same bubble shape without reimplementing it line-for-line.
 
 export function wrapText(text, width) {
   const words = text.split(/\s+/);

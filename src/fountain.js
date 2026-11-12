@@ -1,61 +1,9 @@
 import { compileScript } from './compile.js';
 
-// ─── bard.js: fountain ──────────────────────────────────────────────────────
-// A text-authoring layer on the same four-event vocabulary compile.js already
-// produces — item 2 on the README's own roadmap. Fountain (fountain.io) is
-// the format this deliberately maps onto rather than inventing new syntax:
-// plain text, writable in any editor, already the de facto standard for
-// screenplay-shaped text. compileLegacyScript exists to migrate scenes that
-// were already objects; this exists to let someone author a scene as prose
-// from the start and never touch a JS object at all.
-//
-// This is a *subset* of full Fountain, scoped to what the amphitheater's
-// four events can actually represent — chorus / enter / exit / line, no
-// camera. Explicitly NOT supported, on purpose, matching the same "modern
-// amenities, later" philosophy as the rest of bard.js:
-//
-//   - Transitions (CUT TO:, forced `>`) — no camera to act on them, so
-//     they're parsed (to avoid misreading one as action or a cue) and
-//     silently dropped rather than emitted as any event.
-//   - Dual dialogue (a trailing `^` on a cue, meaning simultaneous speech
-//     with the previous character) — bard.js's timeline is a flat, single
-//     sequence of events; there is no "at the same time" to put two lines
-//     into. The `^` is parsed and stripped; the cue is treated as ordinary
-//     sequential dialogue.
-//   - Rich text emphasis (*italic*, **bold**, ***bold italic***, _underline_)
-//     — DomRenderer (or any renderer built only on the root vocabulary) has
-//     no rich-text path; markers are stripped and the plain text survives.
-//     A renderer that wants emphasis can re-parse it out of the raw text
-//     itself; that's a renderer concern, not a compile-time one.
-//   - Mid-scene exits — Fountain has no structured "character leaves" event,
-//     only prose an author might happen to describe it in, and detecting
-//     that from free text is a real NLP problem, not a text-format one.
-//     Entrances ARE derived (a character's first line in a scene emits an
-//     `enter` right before it) since that much is unambiguous from cue
-//     order alone; exits are left to happen for free at the next scene
-//     boundary, exactly like compileLegacyScene's own scenes do today
-//     (DomRenderer.onSceneChange already clears the whole stage between
-//     scenes; nothing here needs to emit a synthetic "exit everyone").
-//
-// Parentheticals (a line like "(quietly)" between a character cue and their
-// dialogue, or between two dialogue lines) map onto the existing `mask`
-// field a line event already has — no new vocabulary needed. A consumer
-// whose cast config happens to define a mask by that name gets it for
-// free; one that doesn't just falls back to the idle mask, the same
-// graceful degradation DomRenderer already does for any unrecognized mask.
 
-// ─── stripping: notes and boneyard ──────────────────────────────────────────
-// Both can legitimately span multiple lines, including blank ones, so this
-// has to happen on the raw source before splitting into blank-line-separated
-// blocks — otherwise a note containing a blank line would look like two
-// separate blocks instead of one stripped-away comment.
 const BONEYARD_RE = /\/\*[\s\S]*?\*\//g;
 const NOTE_RE = /\[\[[\s\S]*?\]\]/g;
 
-// ─── emphasis: stripped, not rendered (see file header) ────────────────────
-// Order matters: *** before ** before * so a bold-italic run doesn't get
-// half-eaten by the plain-bold pattern first. Underline (_..._) is separate
-// since it uses a different delimiter.
 const EMPHASIS_RES = [
   /\*\*\*([^*]+)\*\*\*/g,
   /\*\*([^*]+)\*\*/g,
@@ -69,7 +17,6 @@ function cleanText(raw) {
   return text.trim();
 }
 
-// ─── line classifiers ───────────────────────────────────────────────────────
 const SCENE_HEADING_RE = /^(int|ext|est|i\.?\/e)[.\s/]/i;
 const FORCED_SCENE_RE = /^\.(?!\.)/; // one leading dot forces a heading; ".." doesn't
 const SCENE_NUMBER_RE = /\s*#[^#\n]+#\s*$/; // trailing "#12#" scene numbering
@@ -129,11 +76,6 @@ function isVoiceExtension(extension) {
   return !!extension && /\b(v\.?\s*o\.?|o\.?\s*s\.?)\b/i.test(extension);
 }
 
-// ─── title page ─────────────────────────────────────────────────────────────
-// Optional "Key: Value" block at the very top of the document, ending at the
-// first blank line. Only consumed if every non-empty line up there matches a
-// recognized key — anything else and this is just a script that starts cold
-// on a scene heading or action, which is equally valid Fountain.
 function extractTitlePage(lines) {
   const meta = {};
   let i = 0;
@@ -148,7 +90,6 @@ function extractTitlePage(lines) {
   return { meta, rest: lines.slice(i) };
 }
 
-// ─── block splitting ────────────────────────────────────────────────────────
 function splitBlocks(lines) {
   const blocks = [];
   let cur = [];
@@ -248,8 +189,6 @@ export function parseFountainScript(source) {
       continue;
     }
 
-    // Anything left standing is action — narration or stage direction
-    // spoken by no one in particular, which is exactly what `chorus` is for.
     ensureScene();
     scene.events.push({ type: 'chorus', text: cleanText(block.map(l => l.trim()).join(' ')) });
   }

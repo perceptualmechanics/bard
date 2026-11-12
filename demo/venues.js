@@ -1,12 +1,3 @@
-// ─── bard.js demo: venues ───────────────────────────────────────────────────
-// Purely decorative staging, deliberately kept out of bard.js itself. The
-// package's own README already draws this line: "everything about how a
-// specific production looks... is staging, not the amphitheater itself, and
-// deliberately lives in the consuming site instead of here." These are
-// ASCII backdrops framing the black-box stage — one per era of physical
-// theater architecture — selectable, off by default. Choosing one changes
-// nothing about how the engine runs a scene; it's paint over the stage,
-// not plumbing under it.
 
 export const VENUES = [
   {
